@@ -1,0 +1,43 @@
+##########################################################
+# prerequisites composite action for doing stuff with go #
+##########################################################
+
+# setup, mods, linter
+
+name: golang prerequisites
+
+description: golang
+
+inputs:
+  token:
+    description: github access token
+    required: true
+    default: ${{ secrets.GITHUB_TOKEN }}
+  golang-version:
+    description: golang version
+    required: true
+    default: '^1.20.2'
+  golangci-lint-version:
+    description: linter Version
+    required: true
+    default: 'v1.51.1'
+
+runs:
+  using: "composite" # defines it as composite action
+  steps:
+  
+    - name: setup go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ inputs.golang-version }}
+
+    - name: setup go modules
+      run: |
+        git config --global url.https://${{ inputs.token }}@github.com/.insteadOf https://github.com/
+        go mod download
+
+    # https://golangci-lint.run/usage/install/#ci-installation
+    - name: install golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: ${{ inputs.golangci-lint-version }}
